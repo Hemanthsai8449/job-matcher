@@ -1,8 +1,8 @@
 from datetime import UTC, datetime, timedelta
 
 from app.extensions import db
-from app.models import Job
-from app.services.matching_service import score_job
+from app.models import Job, JobMatch
+from app.services.matching_service import rebuild_matches, score_job
 
 
 def make_job(**overrides):
@@ -102,3 +102,43 @@ def test_explicit_graduation_year_requirement_is_enforced(app, user_factory):
 
     assert result.eligible is False
     assert "graduation" in result.concerns[0].lower()
+
+
+def test_rebuild_matches_loads_existing_matches_in_one_query(app, user_factory):
+    user = user_factory()
+    jobs = [
+        make_job(
+            provider_job_id=f"job-{index}",
+            fingerprint=f"{index:064x}",
+            apply_url=f"https://jobs.example.com/apply/{index}",
+            canonical_url=f"https://jobs.example.com/apply/{index}",
+        )
+        for index in range(1, 11)
+    ]
+    db.session.add_all(jobs)
+    db.session.commit()
+
+    statements: list[str] = []
+
+    def capture_statement(_connection, _cursor, statement, _parameters, _context, _many):
+        statements.append(statement)
+
+    from sqlalchemy import event
+
+    event.listen(db.engine, "before_cursor_execute", capture_statement)
+    try:
+        matches = rebuild_matches(user)
+    finally:
+        event.remove(db.engine, "before_cursor_execute", capture_statement)
+
+    match_selects = [
+        statement
+        for statement in statements
+        if statement.lstrip().upper().startswith("SELECT") and "FROM job_matches" in statement
+    ]
+    assert len(matches) == len(jobs)
+    assert db.session.query(JobMatch).filter_by(user_id=user.id).count() == len(jobs)
+    assert len(match_selects) == 1
+
+    rebuild_matches(user)
+    assert db.session.query(JobMatch).filter_by(user_id=user.id).count() == len(jobs)

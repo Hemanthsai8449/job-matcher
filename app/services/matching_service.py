@@ -326,16 +326,20 @@ def upsert_match(
     if match is None:
         match = JobMatch(user_id=user.id, job_id=job.id, score=result.score)
         db.session.add(match)
-    match.score = result.score
-    match.matched_skills = result.matched_skills
-    match.missing_skills = result.missing_skills
-    match.reasons = result.reasons
-    match.concerns = result.concerns
+    _apply_match_result(match, result)
     if commit:
         db.session.commit()
     else:
         db.session.flush()
     return match
+
+
+def _apply_match_result(match: JobMatch, result: MatchResult) -> None:
+    match.score = result.score
+    match.matched_skills = result.matched_skills
+    match.missing_skills = result.missing_skills
+    match.reasons = result.reasons
+    match.concerns = result.concerns
 
 
 def rebuild_matches(
@@ -355,9 +359,35 @@ def rebuild_matches(
         raise ValueError("The user no longer exists.")
     user = locked_user
     job_items = list(jobs) if jobs is not None else Job.query.all()
-    matches = [upsert_match(user, job, now=now, commit=False) for job in job_items]
+    job_ids = [int(job.id) for job in job_items if job.id is not None]
+    existing_matches = {
+        int(match.job_id): match
+        for match in db.session.scalars(
+            select(JobMatch).where(
+                JobMatch.user_id == user.id,
+                JobMatch.job_id.in_(job_ids),
+            )
+        ).all()
+    }
+
+    matches: list[JobMatch] = []
+    for job in job_items:
+        if job.id is None:
+            raise ValueError("Jobs must be persisted before rebuilding matches.")
+        job_id = int(job.id)
+        match = existing_matches.get(job_id)
+        result = score_job(user, job, now=now)
+        if match is None:
+            match = JobMatch(user_id=user.id, job_id=job_id, score=result.score)
+            db.session.add(match)
+            existing_matches[job_id] = match
+        _apply_match_result(match, result)
+        matches.append(match)
+
     if commit:
         db.session.commit()
+    else:
+        db.session.flush()
     return matches
 
 
