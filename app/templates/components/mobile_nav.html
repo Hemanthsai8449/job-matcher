@@ -1,0 +1,8 @@
+{% from 'components/ui.html' import icon %}
+{% set endpoint = request.endpoint|default('', true) %}
+<nav class="mobile-app-nav" aria-label="Mobile workspace navigation">
+  <a class="{{ 'active' if endpoint == 'main.dashboard' else '' }}" href="{{ url_for('main.dashboard') }}">{{ icon('home', 20) }}<span>Home</span></a>
+  <a class="{{ 'active' if endpoint in ['jobs.matches', 'jobs.detail'] else '' }}" href="{{ url_for('jobs.matches') }}">{{ icon('search', 20) }}<span>Matches</span></a>
+  <a class="{{ 'active' if endpoint == 'main.applications' else '' }}" href="{{ url_for('main.applications') }}">{{ icon('briefcase', 20) }}<span>Tracker</span></a>
+  <a class="{{ 'active' if endpoint == 'main.settings' else '' }}" href="{{ url_for('main.settings') }}">{{ icon('more', 20) }}<span>More</span></a>
+</nav>

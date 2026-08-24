@@ -1,0 +1,13 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "crons": [
+    {
+      "path": "/operations/cron/sync-jobs",
+      "schedule": "17 0 * * *"
+    },
+    {
+      "path": "/operations/cron/cleanup-private-files",
+      "schedule": "43 1 * * *"
+    }
+  ]
+}

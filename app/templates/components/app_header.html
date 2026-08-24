@@ -1,0 +1,19 @@
+{% from 'components/ui.html' import brand, icon %}
+{% set viewer = user|default(current_user, true) %}
+<header class="app-header">
+  <a class="brand" href="{{ url_for('main.dashboard') }}" aria-label="Job Matcher dashboard">{{ brand() }}</a>
+  <div class="app-header__actions">
+    <a class="icon-button" href="{{ url_for('main.settings') }}#alerts" aria-label="Notification settings">{{ icon('bell', 21) }}</a>
+    <details class="profile-menu">
+      <summary aria-label="Open account menu"><span class="avatar avatar--sm">{{ (viewer.full_name|default('Student', true))[:1]|upper }}</span><span class="profile-menu__name">{{ viewer.full_name|default('My account', true) }}</span>{{ icon('chevron-down', 15) }}</summary>
+      <div class="profile-menu__panel">
+        {% if viewer.is_admin|default(false) %}<a href="{{ url_for('admin.dashboard') }}">{{ icon('shield', 17) }} Administration</a>{% endif %}
+        <a href="{{ url_for('main.settings') }}">{{ icon('settings', 17) }} Settings</a>
+        <form method="post" action="{{ url_for('auth.logout') }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit">{{ icon('arrow-right', 17) }} Sign out</button>
+        </form>
+      </div>
+    </details>
+  </div>
+</header>

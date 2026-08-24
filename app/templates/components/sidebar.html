@@ -1,0 +1,31 @@
+{% from 'components/ui.html' import icon %}
+{% set endpoint = request.endpoint|default('', true) %}
+<aside class="app-sidebar" aria-label="Workspace navigation">
+  {% if admin_mode|default(false) %}
+    <p class="sidebar-label">Administration</p>
+    <nav class="sidebar-nav">
+      <a class="{{ 'active' if endpoint == 'admin.dashboard' else '' }}" href="{{ url_for('admin.dashboard') }}">{{ icon('chart', 19) }} Overview</a>
+      <a href="{{ url_for('admin.dashboard') }}#users">{{ icon('user', 19) }} Students</a>
+      <a href="{{ url_for('admin.dashboard') }}#jobs">{{ icon('briefcase', 19) }} Job quality</a>
+      <a href="{{ url_for('admin.dashboard') }}#delivery">{{ icon('message', 19) }} Delivery</a>
+      <a href="{{ url_for('admin.dashboard') }}#audit">{{ icon('shield', 19) }} Audit trail</a>
+    </nav>
+    <div class="sidebar-footer"><a href="{{ url_for('main.dashboard') }}">{{ icon('arrow-left', 18) }} Student workspace</a></div>
+  {% else %}
+    <p class="sidebar-label">Workspace</p>
+    <nav class="sidebar-nav">
+      <a class="{{ 'active' if endpoint == 'main.dashboard' else '' }}" href="{{ url_for('main.dashboard') }}">{{ icon('home', 19) }} Dashboard</a>
+      <a class="{{ 'active' if endpoint in ['jobs.matches', 'jobs.detail'] else '' }}" href="{{ url_for('jobs.matches') }}">{{ icon('search', 19) }} Job matches</a>
+      <a class="{{ 'active' if endpoint == 'main.applications' else '' }}" href="{{ url_for('main.applications') }}">{{ icon('briefcase', 19) }} Applications</a>
+      <a class="{{ 'active' if endpoint == 'main.toolkit' else '' }}" href="{{ url_for('main.toolkit') }}">{{ icon('sparkles', 19) }} Career toolkit</a>
+      <a class="{{ 'active' if endpoint == 'main.weekly_report' else '' }}" href="{{ url_for('main.weekly_report') }}">{{ icon('chart', 19) }} Weekly report</a>
+      <a class="{{ 'active' if endpoint == 'main.settings' else '' }}" href="{{ url_for('main.settings') }}">{{ icon('settings', 19) }} Settings</a>
+    </nav>
+    <div class="sidebar-support">
+      <span class="sidebar-support__icon">{{ icon('shield', 18) }}</span>
+      <strong>Apply safely</strong>
+      <p>Never pay to submit a job application.</p>
+      <a href="{{ url_for('main.safety') }}">Read safety guide</a>
+    </div>
+  {% endif %}
+</aside>

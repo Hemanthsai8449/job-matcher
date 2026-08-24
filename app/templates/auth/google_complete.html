@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% from 'components/ui.html' import google_mark, icon %}
+{% block title %}Finish your Google registration - Job Matcher{% endblock %}
+{% block body_class %}auth-page auth-page--center{% endblock %}
+{% block content %}
+<section class="centered-flow">
+  <div class="auth-card">
+    <div class="google-account-summary">{{ google_mark(24) }}<div><span>Verified by Google</span><strong>{{ identity.email }}</strong></div></div>
+    <div class="auth-card__heading"><span class="step-kicker">One quick step</span><h1>Finish your profile</h1><p>We still need the mobile number that you will later verify through Telegram.</p></div>
+    <form method="post" action="{{ url_for('auth.google_complete') }}" class="form-stack" novalidate>
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="field"><label for="phone">Mobile number</label><div class="input-wrap">{{ icon('phone', 18) }}<input id="phone" name="phone" type="tel" autocomplete="tel" required maxlength="24" value="{{ form.phone.data or '' }}" placeholder="+91 98765 43210" aria-describedby="phone-help{% if form.phone.errors %} phone-error{% endif %}"></div><p class="field-help" id="phone-help">Include your country code. Use the number connected to Telegram.</p>{% for error in form.phone.errors %}<p class="field-error" id="phone-error">{{ error }}</p>{% endfor %}</div>
+      <label class="choice"><input type="checkbox" name="accept_terms" value="y" required {% if form.accept_terms.data %}checked{% endif %}><span><strong>I agree to the <a href="{{ url_for('main.terms') }}" target="_blank">Terms</a> and <a href="{{ url_for('main.privacy') }}" target="_blank">Privacy Policy</a>.</strong><small>Required to create and protect your account.</small></span></label>{% for error in form.accept_terms.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+      <label class="choice"><input type="checkbox" name="alerts_consent" value="y" {% if form.alerts_consent.data %}checked{% endif %}><span><strong>Send relevant jobs after I connect Telegram.</strong><small>Optional. Alerts can be paused at any time.</small></span></label>
+      <button class="button button--primary button--lg button--block" type="submit">Create my profile {{ icon('arrow-right', 18) }}</button>
+    </form>
+    <p class="security-note">{{ icon('lock', 15) }} Job Matcher does not store your Google password or access token.</p>
+  </div>
+</section>
+{% endblock %}
+{% block footer %}{% endblock %}

@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% from 'components/ui.html' import icon, status_badge %}
+{% block title %}Add your resume - Job Matcher{% endblock %}
+{% block body_class %}onboarding-page{% endblock %}
+{% block content %}
+<section class="onboarding-shell">
+  <div class="onboarding-progress" aria-label="Onboarding progress"><span class="complete"></span><span class="complete"></span><span class="current"></span><span></span><span></span><small>Step 3 of 5</small></div>
+  <div class="onboarding-heading"><span class="step-kicker">Build your matching profile</span><h1>Start with your resume</h1><p>We will extract useful details for you to review. Nothing becomes part of your profile until you confirm it.</p></div>
+  {% if resume|default(none) %}<div class="notice notice--brand">{{ icon('file', 20) }}<p><strong>A current resume is already saved.</strong> Uploading a new file will replace it after processing.</p></div>{% endif %}
+  <form method="post" action="{{ url_for('onboarding.resume') }}" enctype="multipart/form-data" class="upload-card" data-upload-form>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label class="upload-zone" for="resume" data-drop-zone>
+      <input id="resume" name="resume" type="file" accept=".pdf,.doc,.docx,.odt,.rtf,.txt,.md,.html,.htm,.jpg,.jpeg,.png,.webp" required data-file-input>
+      <span class="upload-zone__icon">{{ icon('upload', 30) }}</span>
+      <span class="upload-zone__default" data-upload-default><strong>Drop your resume here</strong><small>or choose a file from your device</small></span>
+      <span class="upload-zone__selected" data-upload-selected hidden><strong data-file-name>Resume selected</strong><small data-file-size></small></span>
+      <span class="button button--secondary button--sm">Choose file</span><small>Supported document, text, and image formats &middot; Maximum {{ config.MAX_CONTENT_LENGTH_MB }} MB</small>
+    </label>
+    {% for error in form.resume.errors %}<div class="form-alert" role="alert">{{ icon('alert', 18) }} {{ error }}</div>{% endfor %}
+    <div class="privacy-inline">{{ icon('shield', 20) }}<p><strong>Your resume stays private.</strong><span>{% if config.RESUME_STORAGE_MODE == 'discard' %}It is parsed in memory and the original file is discarded immediately. Only the details you review are retained.{% else %}It builds your profile and improves matches. You can replace or delete the stored file later.{% endif %}</span></p></div>
+    <div class="onboarding-actions"><a class="button button--ghost" href="{{ url_for('onboarding.resume_review') }}">Enter profile manually</a><button class="button button--primary button--lg" type="submit" data-upload-submit>Upload and review {{ icon('arrow-right', 18) }}</button></div>
+  </form>
+</section>
+{% endblock %}
+{% block footer %}{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/upload.js') }}" defer></script>{% endblock %}

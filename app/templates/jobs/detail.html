@@ -1,0 +1,60 @@
+{% extends 'app_base.html' %}
+{% from 'components/ui.html' import icon, status_badge, progress_ring %}
+{% block title %}{{ job.title }} at {{ job.company }} - Job Matcher{% endblock %}
+{% block app_content %}
+<nav class="breadcrumb" aria-label="Breadcrumb"><a href="{{ url_for('jobs.matches') }}">Job matches</a>{{ icon('arrow-right', 14) }}<span aria-current="page">{{ job.title }}</span></nav>
+
+<section class="job-detail-hero card">
+  <div class="job-detail-hero__identity">
+    <span class="company-avatar company-avatar--lg" aria-hidden="true">{{ job.initials }}</span>
+    <div>
+      <div class="job-detail-badges">{% if job.graduate_friendly %}{{ status_badge('Graduate friendly', 'success', 'check-circle') }}{% endif %}{% if not job.is_active %}{{ status_badge('Listing inactive', 'danger', 'alert') }}{% endif %}{% if job.is_demo %}{{ status_badge('Demonstration listing', 'warning') }}{% endif %}</div>
+      <h1>{{ job.title }}</h1><p>{{ job.company }}</p>
+      <div class="job-meta job-meta--large"><span>{{ icon('pin', 16) }} {{ job.location }}</span><span>{{ icon('briefcase', 16) }} {{ job.workplace_type|replace('_', ' ')|title }}</span><span>{{ icon('calendar', 16) }} {{ job.job_type|replace('_', ' ')|title }}</span>{% if job.salary %}<span>{{ icon('chart', 16) }} {{ job.salary }}</span>{% endif %}</div>
+    </div>
+  </div>
+  {% if match %}<div class="job-detail-score">{{ progress_ring(match.score, 'match') }}<span>Based on your confirmed profile</span></div>{% endif %}
+</section>
+
+<div class="job-detail-layout">
+  <div class="job-detail-main">
+    {% if match %}
+    <section class="card match-explanation">
+      <div class="card-heading"><div><span class="section-icon">{{ icon('sparkles', 20) }}</span><div><h2>Why this job matches you</h2><p>The score is explained by available listing and profile evidence.</p></div></div></div>
+      <div class="explanation-grid">
+        <div class="explanation-block explanation-block--positive"><h3>{{ icon('check-circle', 18) }} Strong signals</h3>{% if match.reasons %}<ul>{% for reason in match.reasons %}<li>{{ reason }}</li>{% endfor %}</ul>{% else %}<p class="quiet-text">No additional reasons were recorded.</p>{% endif %}{% if match.matched_skills %}<div class="chip-row">{% for skill in match.matched_skills %}<span class="chip chip--match">{{ icon('check', 13) }} {{ skill }}</span>{% endfor %}</div>{% endif %}</div>
+        <div class="explanation-block explanation-block--learning"><h3>{{ icon('target', 18) }} Check before applying</h3>{% if match.concerns %}<ul>{% for concern in match.concerns %}<li>{{ concern }}</li>{% endfor %}</ul>{% endif %}{% if match.missing_skills %}<p><strong>Skills worth reviewing</strong></p><div class="chip-row">{% for skill in match.missing_skills %}<span class="chip chip--learning">{{ skill }}</span>{% endfor %}</div>{% elif not match.concerns %}<p class="quiet-text">No material gaps were detected in the available text. Read the full listing before deciding.</p>{% endif %}</div>
+      </div>
+    </section>
+    {% endif %}
+    <section class="card job-description"><div class="card-heading"><div><span class="section-icon">{{ icon('file', 20) }}</span><h2>About the opportunity</h2></div></div><div class="prose prose--preserve">{{ job.description }}</div>{% if job.skills %}<h3>Skills mentioned</h3><div class="chip-row">{% for skill in job.skills %}<span class="chip">{{ skill }}</span>{% endfor %}</div>{% endif %}</section>
+    <section class="card source-card">
+      <div><span class="section-icon">{{ icon('shield', 20) }}</span><div><h2>Source transparency</h2><p>Use the original destination to verify the employer and listing details before sharing personal information.</p></div></div>
+      <dl><div><dt>Source</dt><dd>{{ job.source_label }}</dd></div><div><dt>Checked</dt><dd>{% if job.source_checked_at %}{{ job.source_checked_at.strftime('%d %b %Y') }}{% else %}Not recorded{% endif %}</dd></div><div><dt>Trust signal</dt><dd>{{ job.trust_score }}/100</dd></div><div><dt>Experience</dt><dd>{{ job.minimum_experience|round(1) }} years minimum</dd></div></dl>
+      <a class="text-link" href="{{ url_for('main.safety') }}">Read the job safety checklist {{ icon('arrow-right', 16) }}</a>
+    </section>
+    <button class="text-button report-trigger" type="button" data-dialog-open="report-job">{{ icon('alert', 16) }} Report expired, duplicate, or suspicious listing</button>
+  </div>
+
+  <aside class="job-action-panel"><section class="card sticky-card">
+    <h2>Your next step</h2>{% if application %}<p>Currently marked as {{ status_badge(application.status|replace('_', ' ')|title, 'brand') }}</p>{% else %}<p>Track this role so the next step stays visible.</p>{% endif %}
+    <form method="post" action="{{ url_for('jobs.action', job_id=job.id) }}" class="form-stack">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="next" value="{{ url_for('jobs.detail', job_id=job.id) }}">
+      <div class="field"><label for="status">Application status</label><select id="status" name="status">{% for value, label in action_form.status.choices %}<option value="{{ value }}" {% if (application and application.status == value) or (not application and value == 'saved') %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+      <div class="field"><label for="notes">Private notes <span class="optional">Optional</span></label><textarea id="notes" name="notes" rows="4" maxlength="3000" placeholder="Deadline, contact, next action...">{{ application.notes if application else '' }}</textarea></div>
+      <button class="button button--secondary button--block" type="submit">Update tracker</button>
+    </form>
+    {% if apply_allowed %}<a class="button button--primary button--lg button--block" href="{{ url_for('jobs.apply_redirect', job_id=job.id) }}" target="_blank" rel="noopener" data-apply-link{% if expires_at_utc %} data-expires-at="{{ expires_at_utc }}"{% endif %}>Continue to application {{ icon('external', 18) }}</a><p class="external-note">Opens the listing's external application page. Job Matcher does not submit for you.</p>{% else %}<div class="notice notice--warning">{{ icon('alert', 18) }}<p><strong>Application link unavailable.</strong> {% if job.is_demo %}This demonstration listing cannot accept applications.{% else %}This listing is inactive, expired, or held for a safety review.{% endif %}</p></div>{% endif %}
+  </section></aside>
+</div>
+
+<dialog class="dialog" id="report-job" data-dialog aria-labelledby="report-job-title">
+  <form method="post" action="{{ url_for('jobs.report', job_id=job.id) }}" class="dialog__panel">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="dialog__heading"><span class="danger-icon">{{ icon('alert', 22) }}</span><div><h2 id="report-job-title">Report this listing</h2><p>Your report enters the administrator review queue.</p></div><button class="icon-button" type="button" aria-label="Close" data-dialog-close>{{ icon('close', 20) }}</button></div>
+    <div class="field"><label for="reason">Reason</label><select id="reason" name="reason" required>{% for value, label in report_form.reason.choices %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></div>
+    <div class="field"><label for="details">Details <span class="optional">Optional</span></label><textarea id="details" name="details" rows="4" maxlength="500" placeholder="What did you notice?"></textarea></div>
+    <div class="dialog__actions"><button class="button button--ghost" type="button" data-dialog-close>Cancel</button><button class="button button--danger" type="submit">Submit report</button></div>
+  </form>
+</dialog>
+{% endblock %}

@@ -1,0 +1,27 @@
+{% from 'components/ui.html' import brand, icon %}
+{% set endpoint = request.endpoint|default('', true) %}
+<header class="site-header" data-site-header>
+  <div class="container site-header__inner">
+    <a class="brand" href="{{ url_for('main.index') }}" aria-label="Job Matcher home">{{ brand() }}</a>
+    <button class="icon-button nav-toggle" type="button" aria-expanded="false" aria-controls="site-navigation" data-nav-toggle>
+      <span class="sr-only">Open navigation</span><span data-open-icon>{{ icon('menu', 24) }}</span><span data-close-icon hidden>{{ icon('close', 24) }}</span>
+    </button>
+    <nav class="site-nav" id="site-navigation" aria-label="Primary" data-navigation>
+      <a href="{{ url_for('main.index') }}#how-it-works">How it works</a>
+      <a href="{{ url_for('main.toolkit') if current_user.is_authenticated else url_for('main.index') ~ '#toolkit' }}">Career toolkit</a>
+      <a href="{{ url_for('main.safety') }}">Job safety</a>
+      <span class="site-nav__actions">
+        {% if current_user.is_authenticated %}
+          <a class="button button--ghost button--sm" href="{{ url_for('main.dashboard') }}">Dashboard</a>
+          <form method="post" action="{{ url_for('auth.logout') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button class="button button--primary button--sm" type="submit">Sign out</button>
+          </form>
+        {% else %}
+          <a class="button button--ghost button--sm" href="{{ url_for('auth.login') }}">Sign in</a>
+          <a class="button button--primary button--sm" href="{{ url_for('auth.register') }}">Create profile</a>
+        {% endif %}
+      </span>
+    </nav>
+  </div>
+</header>

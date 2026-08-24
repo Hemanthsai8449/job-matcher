@@ -1,0 +1,29 @@
+{% extends 'app_base.html' %}
+{% from 'components/ui.html' import icon, job_card, status_badge, progress_ring, empty_state %}
+{% block title %}Dashboard - Job Matcher{% endblock %}
+{% block app_content %}
+<div class="page-heading page-heading--split"><div><span class="eyebrow eyebrow--brand">Your job-search workspace</span><h1>Welcome back, {{ current_user.full_name.split(' ')[0]|default('there', true) }}.</h1><p>Focus on the strongest opportunities and keep every next step visible.</p></div><a class="button button--primary" href="{{ url_for('jobs.matches') }}">Browse all matches {{ icon('arrow-right', 17) }}</a></div>
+
+{% if not current_user.onboarding_complete %}<section class="notice notice--warning onboarding-reminder">{{ icon('alert', 20) }}<div><strong>Finish your matching profile</strong><p>Add your resume and preferences before recommendations can become personal.</p></div><a class="button button--secondary button--sm" href="{{ url_for('onboarding.resume') }}">Continue setup</a></section>{% endif %}
+
+<section class="dashboard-grid dashboard-grid--stats" aria-label="Overview">
+  <article class="metric-card metric-card--featured"><span class="metric-card__icon">{{ icon('target', 21) }}</span><div><span>Profile readiness</span><strong>{{ readiness|default(0) }}%</strong><small>{{ ((readiness|default(0)) / 25)|round(0, 'floor')|int }} of {{ profile_steps|length }} essentials complete</small></div>{{ progress_ring(readiness|default(0), 'ready') }}</article>
+  <article class="metric-card"><span class="metric-card__icon">{{ icon('bookmark', 21) }}</span><div><span>Saved</span><strong>{{ application_counts.get('saved', 0) }}</strong><small>Roles to review</small></div></article>
+  <article class="metric-card"><span class="metric-card__icon">{{ icon('briefcase', 21) }}</span><div><span>Applied</span><strong>{{ application_counts.get('applied', 0) }}</strong><small>Applications submitted</small></div></article>
+  <article class="metric-card"><span class="metric-card__icon">{{ icon('message', 21) }}</span><div><span>Interviews</span><strong>{{ application_counts.get('interview', 0) }}</strong><small>Conversations in progress</small></div></article>
+</section>
+
+<div class="dashboard-layout">
+  <div class="dashboard-primary">
+    <section><div class="section-title-row"><div><span class="eyebrow eyebrow--brand">Best alignment first</span><h2>Your top matches</h2></div><a class="text-link" href="{{ url_for('jobs.matches') }}">View all {{ icon('arrow-right', 16) }}</a></div>
+      <div class="job-list">{% for match, job in top_matches %}{{ job_card(match, job, none, true) }}{% else %}{{ empty_state('No matches yet', 'Complete your profile or broaden your preferences to discover suitable roles.', 'search', 'Review preferences', url_for('main.settings')) }}{% endfor %}</div>
+    </section>
+    <section class="card skill-snapshot"><div class="card-heading"><div><span class="section-icon">{{ icon('sparkles', 20) }}</span><h2>Skills across your top matches</h2></div><a href="{{ url_for('main.toolkit') }}">Open toolkit</a></div>{% if skill_summary %}<div class="skill-bars">{% set peak = skill_summary[0][1] if skill_summary else 1 %}{% for skill, count in skill_summary %}<div><span>{{ skill }}</span><span class="mini-bar"><i style="width: {{ (count / peak * 100)|round|int }}%"></i></span><small>{{ count }} match{% if count != 1 %}es{% endif %}</small></div>{% endfor %}</div>{% else %}<p class="quiet-text">Skill patterns appear after your first matches are created.</p>{% endif %}</section>
+  </div>
+  <aside class="dashboard-aside">
+    <section class="card readiness-card"><div class="card-heading"><div><span class="section-icon">{{ icon('check-circle', 20) }}</span><h2>Profile checklist</h2></div><strong>{{ readiness|default(0) }}%</strong></div><ul class="checklist">{% for label, done in profile_steps %}<li class="{{ 'done' if done else '' }}"><span>{{ icon('check', 14) if done else icon('clock', 14) }}</span>{{ label }}{% if not done and label == 'Telegram connected' %}<a href="{{ url_for('onboarding.telegram_connect') }}">Connect</a>{% endif %}</li>{% endfor %}</ul></section>
+    <section class="card alert-card" id="alerts"><div class="card-heading"><div><span class="section-icon section-icon--telegram">{{ icon('message', 20) }}</span><h2>Telegram alerts</h2></div>{% if current_user.alerts_active %}{{ status_badge('Active', 'success') }}{% elif current_user.alert_status == 'paused' %}{{ status_badge('Paused', 'warning') }}{% else %}{{ status_badge('Inactive', 'neutral') }}{% endif %}</div>{% if current_user.telegram_connected %}<p>Up to <strong>{{ current_user.daily_job_limit }}</strong> relevant jobs at <strong>{{ current_user.preferred_time }}</strong>.</p>{% if current_user.alerts_active %}<form method="post" action="{{ url_for('main.pause_alerts') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="button button--secondary button--block" type="submit">Pause alerts</button></form>{% else %}<form method="post" action="{{ url_for('main.resume_alerts') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="button button--primary button--block" type="submit">Resume or renew alerts</button></form>{% endif %}{% else %}<p>Connect your registered mobile number to receive private recommendations.</p><a class="button button--telegram button--block" href="{{ url_for('onboarding.telegram_connect') }}">Connect Telegram</a>{% endif %}</section>
+    <section class="safety-mini"><span>{{ icon('shield', 21) }}</span><div><strong>Pause before you pay.</strong><p>A genuine employer should not charge an application fee.</p><a href="{{ url_for('main.safety') }}">Safety checklist {{ icon('arrow-right', 15) }}</a></div></section>
+  </aside>
+</div>
+{% endblock %}

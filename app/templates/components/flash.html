@@ -1,0 +1,15 @@
+{% from 'components/ui.html' import icon %}
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+  <div class="flash-stack" aria-live="polite">
+    {% for category, message in messages %}
+    {% set tone = 'danger' if category in ['danger', 'error'] else category if category in ['success', 'warning', 'info', 'dev'] else 'info' %}
+    <div class="flash flash--{{ tone }}" role="{{ 'alert' if tone == 'danger' else 'status' }}">
+      {{ icon('check-circle' if tone == 'success' else 'alert' if tone in ['warning', 'danger'] else 'info', 19) }}
+      <span>{{ message }}</span>
+      <button class="flash__close" type="button" aria-label="Dismiss message" data-dismiss>{{ icon('close', 17) }}</button>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+{% endwith %}

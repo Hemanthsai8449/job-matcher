@@ -1,0 +1,42 @@
+@media (prefers-reduced-motion: no-preference) {
+  .js .reveal { opacity: 0; transform: translateY(22px); transition: opacity .7s var(--ease), transform .7s var(--ease); }
+  .js .reveal[data-reveal-delay="1"] { transition-delay: .09s; }
+  .js .reveal[data-reveal-delay="2"] { transition-delay: .18s; }
+  .js .reveal[data-reveal-delay="3"] { transition-delay: .27s; }
+  .js .reveal.is-visible { opacity: 1; transform: translateY(0); }
+  .hero-preview { animation: preview-float 7s ease-in-out infinite; }
+  .scroll-cue > span:last-child { animation: cue-bounce 1.8s ease-in-out infinite; }
+  .safety-shield-visual i:nth-child(2) { animation: ring-pulse 4s ease-in-out infinite; }
+  .safety-visual__ring { animation: soft-pulse 4s ease-in-out infinite; }
+  .connection-line { animation: connection-glow 2.5s ease-in-out infinite; }
+  .flash { animation: flash-enter .4s var(--ease) both; }
+  .flash.is-leaving { animation: flash-leave .28s ease both; }
+  .toast { animation: toast-enter .35s var(--ease) both; }
+  .dialog[open] .dialog__panel { animation: dialog-enter .3s var(--ease) both; }
+  .dialog[open]::backdrop { animation: backdrop-enter .25s ease both; }
+  .upload-zone.is-dragging .upload-zone__icon { animation: upload-bob .7s ease-in-out infinite alternate; }
+  .job-card, .metric-card, .tool-card, .application-card, .safety-check-grid article, .step-card, .feature-card { will-change: transform; }
+  @keyframes preview-float { 0%, 100% { transform: perspective(900px) rotateY(-3deg) rotateX(1deg) translateY(0); } 50% { transform: perspective(900px) rotateY(-2deg) rotateX(1deg) translateY(-8px); } }
+  @keyframes cue-bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(5px); } }
+  @keyframes soft-pulse { 0%, 100% { opacity: .68; transform: translate(-50%, -50%) scale(.96); } 50% { opacity: 1; transform: translate(-50%, -50%) scale(1.03); } }
+  @keyframes ring-pulse { 0%, 100% { opacity: .6; transform: scale(.96); } 50% { opacity: 1; transform: scale(1.03); } }
+  @keyframes connection-glow { 0%, 100% { opacity: .55; } 50% { opacity: 1; filter: drop-shadow(0 0 6px var(--accent-400)); } }
+  @keyframes flash-enter { from { opacity: 0; transform: translateX(24px) scale(.97); } to { opacity: 1; transform: translateX(0) scale(1); } }
+  @keyframes flash-leave { to { opacity: 0; transform: translateX(20px) scale(.96); } }
+  @keyframes toast-enter { from { opacity: 0; transform: translateY(14px); } }
+  @keyframes dialog-enter { from { opacity: 0; transform: translateY(18px) scale(.97); } }
+  @keyframes backdrop-enter { from { opacity: 0; } }
+  @keyframes upload-bob { to { transform: translateY(-6px); } }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+  .reveal { opacity: 1 !important; transform: none !important; }
+  .hero-preview { transform: none !important; }
+}
+
+@media (max-width: 900px) and (prefers-reduced-motion: no-preference) {
+  .hero-preview { animation-name: preview-float-mobile; }
+  @keyframes preview-float-mobile { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+}

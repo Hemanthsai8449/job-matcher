@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% from 'components/ui.html' import icon, status_badge %}
+{% set profile = parsed_profile|default({}, true) %}
+{% block title %}Confirm your profile - Job Matcher{% endblock %}
+{% block body_class %}onboarding-page{% endblock %}
+{% block content %}
+<section class="onboarding-shell onboarding-shell--wide">
+  <div class="onboarding-progress" aria-label="Onboarding progress"><span class="complete"></span><span class="complete"></span><span class="current"></span><span></span><span></span><small>Step 3 of 5</small></div>
+  <div class="page-heading page-heading--split"><div><span class="step-kicker">{{ 'Review before saving' if resume else 'Build your profile manually' }}</span><h1>{{ 'Does this look like you?' if resume else 'Tell us what you can do' }}</h1><p>{{ 'Correct anything we misunderstood.' if resume else 'Add only information you can confidently discuss.' }} Your confirmed profile—not the original file—drives matching.</p></div>{{ status_badge('Editable profile', 'success', 'check-circle') }}</div>
+  <form method="post" action="{{ url_for('onboarding.resume_review') }}" class="review-layout">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="next" value="{{ return_to|default('', true) }}">
+    <section class="card form-section"><div class="card-heading"><div><span class="section-icon">{{ icon('user', 20) }}</span><h2>Professional summary</h2></div><span class="quiet-text">Editable</span></div>
+      <div class="field"><label for="headline">Headline</label><input id="headline" name="headline" type="text" maxlength="160" value="{{ profile.get('headline', '') }}" placeholder="Computer science graduate interested in backend development"></div>
+      <div class="field"><label for="education">Education</label><textarea id="education" name="education" rows="4" maxlength="3000" placeholder="Degree, institution, graduation year">{{ profile.get('education', '') }}</textarea></div>
+      <div class="field"><label for="experience">Experience and projects</label><textarea id="experience" name="experience" rows="6" maxlength="5000" placeholder="Internships, projects, volunteering, or relevant coursework">{{ profile.get('experience', '') }}</textarea></div>
+      <div class="form-grid"><div class="field"><label for="experience_years">Relevant experience</label><input id="experience_years" name="experience_years" type="number" min="0" max="60" step="0.5" value="{{ profile.get('experience_years', 0) }}"></div><div class="field"><label for="graduation_year">Graduation year <span class="optional">Optional</span></label><input id="graduation_year" name="graduation_year" type="number" min="1990" max="2100" value="{{ profile.get('graduation_year') or '' }}"></div></div>
+    </section>
+    <aside class="review-sidebar"><section class="card"><div class="card-heading"><div><span class="section-icon">{{ icon('sparkles', 20) }}</span><h2>Skills found</h2></div></div><div class="tag-editor" data-tag-editor><div class="chip-row" data-tags>{% for skill in profile.get('skills', []) %}<span class="chip chip--editable">{{ skill }}<button type="button" aria-label="Remove {{ skill }}" data-remove-tag>&times;</button><input type="hidden" name="skills" value="{{ skill }}"></span>{% endfor %}</div><div class="tag-input-row"><label class="sr-only" for="skill-input">Add a skill</label><input id="skill-input" type="text" maxlength="80" placeholder="Add a skill"><button class="button button--secondary button--sm" type="button" data-add-tag>Add</button></div></div></section><div class="notice notice--brand">{{ icon('eye', 19) }}<p><strong>Keep it accurate.</strong> Only confirm skills and experience you can discuss confidently in an interview.</p></div></aside>
+    <div class="review-actions"><a class="button button--ghost" href="{{ url_for('main.settings') if return_to == 'settings' else url_for('onboarding.resume') }}">{{ icon('arrow-left', 17) }} {{ 'Back to settings' if return_to == 'settings' else ('Replace file' if resume else 'Upload instead') }}</a><button class="button button--primary button--lg" type="submit">{{ 'Save profile' if return_to == 'settings' else 'Confirm and choose preferences' }} {{ icon('arrow-right', 18) }}</button></div>
+  </form>
+</section>
+{% endblock %}
+{% block footer %}{% endblock %}

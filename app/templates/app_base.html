@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block body_class %}app-page{% if admin_mode|default(false) %} admin-page{% endif %}{% endblock %}
+{% block site_chrome %}{% include 'components/app_header.html' %}{% endblock %}
+{% block page %}
+  <div class="app-shell">
+    {% include 'components/sidebar.html' %}
+    <main class="app-main" id="main-content" tabindex="-1"><div class="app-content">{% block app_content %}{% endblock %}</div></main>
+  </div>
+  {% if admin_mode|default(false) %}
+  {% from 'components/ui.html' import icon %}
+  <nav class="mobile-app-nav" aria-label="Mobile administration navigation"><a class="active" href="{{ url_for('admin.dashboard') }}">{{ icon('chart', 20) }}<span>Overview</span></a><a href="{{ url_for('admin.dashboard') }}#reports">{{ icon('alert', 20) }}<span>Reports</span></a><a href="{{ url_for('admin.dashboard') }}#jobs">{{ icon('briefcase', 20) }}<span>Jobs</span></a><a href="{{ url_for('admin.dashboard') }}#audit">{{ icon('shield', 20) }}<span>Audit</span></a></nav>
+  {% else %}{% include 'components/mobile_nav.html' %}{% endif %}
+{% endblock %}
+{% block footer %}{% endblock %}

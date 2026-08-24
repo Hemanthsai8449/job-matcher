@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en" class="no-js">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#09243b">
+  <meta name="color-scheme" content="light">
+  <meta name="description" content="{% block meta_description %}Job Matcher helps students and fresh graduates find relevant opportunities, understand every match, and prepare with confidence.{% endblock %}">
+  <title>{% block title %}Job Matcher{% endblock %}</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%230f766e'/%3E%3Cpath d='M18 23h28v23H18zM25 23v-5h14v5M18 32h28M28 32v5h8v-5' fill='none' stroke='white' stroke-width='4' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/tokens.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/motion.css') }}">
+  {% block head %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  {% block site_chrome %}{% include 'components/header.html' %}{% endblock %}
+  {% include 'components/flash.html' %}
+  {% block page %}
+    <main id="main-content" tabindex="-1">{% block content %}{% endblock %}</main>
+  {% endblock %}
+  {% block footer %}{% include 'components/footer.html' %}{% endblock %}
+  <div class="toast-region" id="toast-region" aria-live="polite" aria-atomic="true"></div>
+  <script src="{{ url_for('static', filename='js/app.js') }}" defer></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

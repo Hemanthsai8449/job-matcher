@@ -1,0 +1,19 @@
+{% extends 'app_base.html' %}
+{% from 'components/ui.html' import icon, empty_state, status_badge %}
+{% block title %}Application tracker - Job Matcher{% endblock %}
+{% block app_content %}
+<div class="page-heading page-heading--split"><div><span class="eyebrow eyebrow--brand">Your progress, in one place</span><h1>Application tracker</h1><p>Keep the stage and next step accurate so your weekly report stays useful.</p></div><a class="button button--primary" href="{{ url_for('jobs.matches') }}">Find another role {{ icon('search', 17) }}</a></div>
+
+{% if rows %}
+<div class="tracker-summary" aria-label="Application summary">{% for status, label in [('saved','Saved'),('applied','Applied'),('interview','Interview'),('offer','Offer'),('rejected','Rejected'),('withdrawn','Withdrawn')] %}<div><span>{{ label }}</span><strong>{{ grouped.get(status, [])|length }}</strong></div>{% endfor %}</div>
+<div class="kanban" data-kanban>
+  {% for status, label, helper in [('saved','Saved','Review and decide'),('applied','Applied','Awaiting response'),('interview','Interview','Prepare and follow up'),('offer','Offer','Review carefully'),('rejected','Rejected','Learn and continue'),('withdrawn','Withdrawn','Closed by you')] %}
+  <section class="kanban-column" data-stage="{{ status }}"><header><div><span class="stage-dot stage-dot--{{ status }}"></span><h2>{{ label }}</h2></div><span class="count-badge">{{ grouped.get(status, [])|length }}</span><p>{{ helper }}</p></header><div class="kanban-column__body">
+    {% for application, job in grouped.get(status, []) %}<article class="application-card"><div class="application-card__heading"><span class="company-avatar company-avatar--sm">{{ job.initials }}</span><div><h3><a href="{{ url_for('jobs.detail', job_id=job.id) }}">{{ job.title }}</a></h3><p>{{ job.company }}</p></div></div><div class="job-meta"><span>{{ icon('pin', 14) }} {{ job.location }}</span><span>{{ icon('calendar', 14) }} Updated {{ application.updated_at.strftime('%d %b') }}</span></div>{% if application.notes %}<p class="application-note">{{ application.notes|truncate(120) }}</p>{% endif %}<form method="post" action="{{ url_for('jobs.action', job_id=job.id) }}" class="stage-form" data-stage-form><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="next" value="{{ url_for('main.applications') }}"><label class="sr-only" for="status-{{ application.id }}">Update status for {{ job.title }}</label><select id="status-{{ application.id }}" name="status" data-auto-submit>{% for value, option in [('saved','Saved'),('applied','Applied'),('interview','Interview'),('offer','Offer'),('rejected','Rejected'),('withdrawn','Withdrawn')] %}<option value="{{ value }}" {% if application.status == value %}selected{% endif %}>{{ option }}</option>{% endfor %}</select><button class="button button--secondary button--sm" type="submit">Update</button></form></article>{% else %}<div class="column-empty"><span>{{ icon('briefcase', 19) }}</span><p>No applications here.</p></div>{% endfor %}
+  </div></section>
+  {% endfor %}
+</div>
+{% else %}
+<section class="card">{{ empty_state('Your tracker is ready', 'Save a suitable job or mark it as applied, and it will appear here.', 'briefcase', 'Explore job matches', url_for('jobs.matches')) }}</section>
+{% endif %}
+{% endblock %}
