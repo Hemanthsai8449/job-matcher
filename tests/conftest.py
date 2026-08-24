@@ -22,6 +22,7 @@ def app(tmp_path):
             "RATELIMIT_ENABLED": False,
             "UPLOAD_FOLDER": str(tmp_path / "uploads"),
             "EXPORT_FOLDER": str(tmp_path / "exports"),
+            "RESUME_STORAGE_MODE": "local",
             "APP_BASE_URL": "http://localhost",
             "MAIL_HOST": "",
             "TELEGRAM_BOT_TOKEN": "",
