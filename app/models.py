@@ -50,7 +50,8 @@ class User(UserMixin, TimestampMixin, db.Model):
     preferred_locations = db.Column(db.JSON, default=list, nullable=False)
     work_modes = db.Column(db.JSON, default=lambda: ["remote", "hybrid", "onsite"], nullable=False)
     job_types = db.Column(db.JSON, default=lambda: ["full_time", "internship"], nullable=False)
-    minimum_match_score = db.Column(db.Integer, default=45, nullable=False)
+    # Kept for backward-compatible databases; matching uses the system-wide 50% floor.
+    minimum_match_score = db.Column(db.Integer, default=50, nullable=False)
     salary_preference = db.Column(db.String(80), default="")
     graduation_year = db.Column(db.Integer)
     onboarding_complete = db.Column(db.Boolean, default=False, nullable=False)

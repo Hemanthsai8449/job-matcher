@@ -12,6 +12,8 @@ from ..models import Job, JobMatch, SentJob, User
 from ..utils import utcnow
 from .resume_service import SKILL_ALIASES
 
+MATCH_SCORE_FLOOR = 50
+
 
 @dataclass(frozen=True)
 class MatchResult:
@@ -405,7 +407,7 @@ def ranked_matches(
         .join(Job, Job.id == JobMatch.job_id)
         .where(
             JobMatch.user_id == user.id,
-            JobMatch.score >= max(0, min(100, int(user.minimum_match_score or 0))),
+            JobMatch.score >= MATCH_SCORE_FLOOR,
             Job.is_active.is_(True),
             Job.trust_score >= 40,
             Job.reported_count < 3,

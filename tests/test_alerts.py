@@ -4,7 +4,8 @@ import pytest
 
 from app.extensions import db
 from app.models import Job, JobMatch, SentJob
-from app.services.alert_service import dispatch_user_alerts
+from app.services.alert_service import dispatch_user_alerts, select_alert_jobs
+from app.services.matching_service import MATCH_SCORE_FLOOR
 
 
 def test_alerts_never_repeat_and_respect_total_daily_limit(app, user_factory):
@@ -78,3 +79,50 @@ def test_alert_dispatch_rejects_non_durable_reservations(app, user_factory):
 
     with pytest.raises(ValueError, match="durable database reservations"):
         dispatch_user_alerts(user, commit=False)
+
+
+def test_alerts_use_fixed_50_percent_floor_and_highest_score_first(app, user_factory):
+    now = datetime.now(UTC)
+    user = user_factory(minimum_match_score=95, daily_job_limit=10)
+    for index, score in enumerate([49, 100, 50, 75], start=1):
+        job = Job(
+            provider="test",
+            provider_job_id=f"floor-job-{index}",
+            fingerprint=f"{index + 100:064x}",
+            title=f"Graduate Developer {index}",
+            company="Example Labs",
+            location="Bengaluru",
+            workplace_type="hybrid",
+            job_type="full_time",
+            description="Graduate role",
+            skills=[],
+            minimum_experience=0,
+            graduate_friendly=True,
+            posted_at=now - timedelta(hours=index),
+            expires_at=now + timedelta(days=20),
+            apply_url=f"https://jobs.example.com/floor/{index}",
+            canonical_url=f"https://jobs.example.com/floor/{index}",
+            source_label="Test employer board",
+            source_checked_at=now,
+            last_seen_at=now,
+            trust_score=90,
+        )
+        db.session.add(job)
+        db.session.flush()
+        db.session.add(
+            JobMatch(
+                user_id=user.id,
+                job_id=job.id,
+                score=score,
+                matched_skills=[],
+                missing_skills=[],
+                reasons=[],
+                concerns=[],
+            )
+        )
+    db.session.commit()
+
+    matches = select_alert_jobs(user, now=now, refresh_matches=False)
+
+    assert MATCH_SCORE_FLOOR == 50
+    assert [match.score for match in matches] == [100, 75, 50]

@@ -21,7 +21,7 @@ from ..services.file_cleanup import (
     process_private_file,
     queue_private_file,
 )
-from ..services.matching_service import rebuild_matches
+from ..services.matching_service import MATCH_SCORE_FLOOR, rebuild_matches
 from ..services.resume_service import ResumeValidationError, save_and_parse_resume
 from ..services.telegram_service import build_deep_link, create_link_token
 from .forms import ResumeUploadForm
@@ -211,7 +211,6 @@ def preferences():
         "job_types": current_user.job_types or ["full_time", "internship"],
         "graduation_year": current_user.graduation_year,
         "experience_years": current_user.experience_years,
-        "minimum_match_score": current_user.minimum_match_score,
         "salary_preference": current_user.salary_preference,
         "daily_job_limit": current_user.daily_job_limit,
         "preferred_time": current_user.preferred_time,
@@ -236,12 +235,11 @@ def preferences():
             try:
                 graduation_year = int(request.form.get("graduation_year") or 0) or None
                 experience_years = float(request.form.get("experience_years") or 0)
-                match_score = int(request.form.get("minimum_match_score") or 45)
                 daily_limit = int(
                     request.form.get("daily_job_limit") or current_user.daily_job_limit
                 )
             except ValueError:
-                flash("Check the graduation, experience, and matching values.", "danger")
+                flash("Check the graduation and experience values.", "danger")
                 return render_template("onboarding/preferences.html", profile=profile)
             if graduation_year and not 1990 <= graduation_year <= 2100:
                 flash("Enter a valid graduation year.", "danger")
@@ -252,7 +250,7 @@ def preferences():
             current_user.job_types = list(dict.fromkeys(job_types))
             current_user.graduation_year = graduation_year
             current_user.experience_years = max(0.0, min(experience_years, 60.0))
-            current_user.minimum_match_score = max(30, min(match_score, 95))
+            current_user.minimum_match_score = MATCH_SCORE_FLOOR
             current_user.daily_job_limit = daily_limit if daily_limit in {3, 5, 10} else 5
             preferred_time = request.form.get("preferred_time", "")
             timezone = request.form.get("timezone", "")

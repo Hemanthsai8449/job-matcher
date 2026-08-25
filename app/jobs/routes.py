@@ -5,7 +5,7 @@ from flask_login import current_user, login_required
 
 from ..extensions import db, limiter
 from ..models import Application, AuditLog, Job, JobMatch, JobReport, as_utc
-from ..services.matching_service import rebuild_matches, score_job
+from ..services.matching_service import MATCH_SCORE_FLOOR, rebuild_matches, score_job
 from ..utils import canonicalize_url, is_safe_relative_url, utcnow
 from .forms import JobActionForm, JobReportForm, MatchFilterForm
 
@@ -42,7 +42,7 @@ def matches():
         )
         .where(
             JobMatch.user_id == current_user.id,
-            JobMatch.score >= current_user.minimum_match_score,
+            JobMatch.score >= MATCH_SCORE_FLOOR,
             Job.is_active.is_(True),
             demo_visibility,
             Job.trust_score >= 40,
@@ -73,7 +73,13 @@ def matches():
     rows = db.session.execute(
         statement.order_by(JobMatch.score.desc(), Job.posted_at.desc(), Job.id.desc())
     ).all()
-    return render_template("jobs/matches.html", rows=rows, form=form, filters=request.args)
+    return render_template(
+        "jobs/matches.html",
+        rows=rows,
+        form=form,
+        filters=request.args,
+        match_score_floor=MATCH_SCORE_FLOOR,
+    )
 
 
 @bp.get("/<int:job_id>")

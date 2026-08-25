@@ -74,9 +74,6 @@ class PreferencesForm(FlaskForm):
     graduation_year = IntegerField(
         "Graduation year", validators=[Optional(), NumberRange(min=1990, max=2100)]
     )
-    minimum_match_score = IntegerField(
-        "Minimum match score", validators=[DataRequired(), NumberRange(min=30, max=95)]
-    )
     daily_job_limit = SelectField(
         "Daily job links",
         choices=[("3", "3 jobs"), ("5", "5 jobs"), ("10", "10 jobs")],

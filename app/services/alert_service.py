@@ -16,7 +16,7 @@ from sqlalchemy.exc import IntegrityError
 from ..extensions import db
 from ..models import Application, AuditLog, Job, JobMatch, SentJob, User
 from ..utils import utcnow
-from .matching_service import rebuild_matches
+from .matching_service import MATCH_SCORE_FLOOR, rebuild_matches
 from .telegram_service import (
     TelegramServiceError,
     TelegramUpdateClaimLost,
@@ -112,7 +112,7 @@ def select_alert_jobs(
         .where(
             JobMatch.user_id == user.id,
             JobMatch.score > 0,
-            JobMatch.score >= max(0, min(100, int(user.minimum_match_score or 0))),
+            JobMatch.score >= MATCH_SCORE_FLOOR,
             Job.is_active.is_(True),
             Job.is_demo.is_(False),
             Job.trust_score >= 40,

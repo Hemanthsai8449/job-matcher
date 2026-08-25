@@ -173,3 +173,41 @@ def test_settings_links_to_confirmed_profile_editor(app, client, user_factory):
     assert response.status_code == 200
     assert b"Confirmed profile" in response.data
     assert b"/onboarding/resume/review?next=settings" in response.data
+
+
+def test_match_score_is_automatic_and_cannot_be_selected(app, client, user_factory):
+    user = user_factory(minimum_match_score=95)
+    login_client(client, user)
+
+    settings_response = client.get("/settings")
+    onboarding_response = client.get("/onboarding/preferences")
+
+    assert settings_response.status_code == 200
+    assert onboarding_response.status_code == 200
+    assert b"Minimum match score" not in settings_response.data
+    assert b"Minimum match score" not in onboarding_response.data
+    assert b"automatically ranked" in settings_response.data
+    assert b"automatically ranked" in onboarding_response.data
+
+    response = client.post(
+        "/settings",
+        data={
+            "desired_roles": "Python Developer",
+            "preferred_locations": "Bengaluru, Remote",
+            "remote": "y",
+            "hybrid": "y",
+            "onsite": "y",
+            "full_time": "y",
+            "internship": "y",
+            "graduation_year": "2027",
+            "minimum_match_score": "95",
+            "daily_job_limit": "5",
+            "preferred_time": "09:00",
+            "timezone": "Asia/Kolkata",
+            "salary_preference": "",
+        },
+    )
+
+    assert response.status_code == 302
+    db.session.refresh(user)
+    assert user.minimum_match_score == 50

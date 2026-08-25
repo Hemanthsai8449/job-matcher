@@ -38,7 +38,7 @@ from ..services.file_cleanup import (
     process_private_file,
     queue_private_file,
 )
-from ..services.matching_service import rebuild_matches
+from ..services.matching_service import MATCH_SCORE_FLOOR, rebuild_matches
 from ..utils import utcnow
 
 bp = Blueprint("main", __name__)
@@ -70,7 +70,7 @@ def dashboard():
             Job.trust_score >= 40,
             Job.reported_count < 3,
             db.or_(Job.expires_at.is_(None), Job.expires_at > current_time),
-            JobMatch.score >= current_user.minimum_match_score,
+            JobMatch.score >= MATCH_SCORE_FLOOR,
         )
         .order_by(JobMatch.score.desc(), Job.posted_at.desc(), Job.id.desc())
         .limit(3)
@@ -125,7 +125,6 @@ def settings():
         form.internship.data = "internship" in (current_user.job_types or [])
         form.contract.data = "contract" in (current_user.job_types or [])
         form.graduation_year.data = current_user.graduation_year
-        form.minimum_match_score.data = current_user.minimum_match_score
         form.daily_job_limit.data = str(current_user.daily_job_limit)
         form.preferred_time.data = current_user.preferred_time
         form.timezone.data = current_user.timezone
@@ -157,7 +156,7 @@ def settings():
             current_user.work_modes = work_modes
             current_user.job_types = job_types
             current_user.graduation_year = form.graduation_year.data
-            current_user.minimum_match_score = form.minimum_match_score.data
+            current_user.minimum_match_score = MATCH_SCORE_FLOOR
             current_user.daily_job_limit = int(form.daily_job_limit.data)
             current_user.preferred_time = form.preferred_time.data
             current_user.timezone = form.timezone.data
