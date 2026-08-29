@@ -6,6 +6,102 @@
       "schedule": "17 0 * * *"
     },
     {
+      "path": "/operations/cron/dispatch-alerts/0",
+      "schedule": "11 0 * * *"
+    },
+    {
+      "path": "/operations/cron/dispatch-alerts/1",
+      "schedule": "11 1 * * *"
+    },
+    {
+      "path": "/operations/cron/dispatch-alerts/2",
+      "schedule": "11 2 * * *"
+    },
+    {
+      "path": "/operations/cron/dispatch-alerts/3",
+      "schedule": "11 3 * * *"
+    },
+    {
+      "path": "/operations/cron/dispatch-alerts/4",
+      "schedule": "11 4 * * *"
+    },
+    {
+      "path": "/operations/cron/dispatch-alerts/5",
+      "schedule": "11 5 * * *"
+    },
+    {
+      "path": "/operations/cron/dispatch-alerts/6",
+      "schedule": "11 6 * * *"
+    },
+    {
+      "path": "/operations/cron/dispatch-alerts/7",
+      "schedule": "11 7 * * *"
+    },
+    {
+      "path": "/operations/cron/dispatch-alerts/8",
+      "schedule": "11 8 * * *"
+    },
+    {
+      "path": "/operations/cron/dispatch-alerts/9",
+      "schedule": "11 9 * * *"
+    },
+    {
+      "path": "/operations/cron/dispatch-alerts/10",
+      "schedule": "11 10 * * *"
+    },
+    {
+      "path": "/operations/cron/dispatch-alerts/11",
+      "schedule": "11 11 * * *"
+    },
+    {
+      "path": "/operations/cron/dispatch-alerts/12",
+      "schedule": "11 12 * * *"
+    },
+    {
+      "path": "/operations/cron/dispatch-alerts/13",
+      "schedule": "11 13 * * *"
+    },
+    {
+      "path": "/operations/cron/dispatch-alerts/14",
+      "schedule": "11 14 * * *"
+    },
+    {
+      "path": "/operations/cron/dispatch-alerts/15",
+      "schedule": "11 15 * * *"
+    },
+    {
+      "path": "/operations/cron/dispatch-alerts/16",
+      "schedule": "11 16 * * *"
+    },
+    {
+      "path": "/operations/cron/dispatch-alerts/17",
+      "schedule": "11 17 * * *"
+    },
+    {
+      "path": "/operations/cron/dispatch-alerts/18",
+      "schedule": "11 18 * * *"
+    },
+    {
+      "path": "/operations/cron/dispatch-alerts/19",
+      "schedule": "11 19 * * *"
+    },
+    {
+      "path": "/operations/cron/dispatch-alerts/20",
+      "schedule": "11 20 * * *"
+    },
+    {
+      "path": "/operations/cron/dispatch-alerts/21",
+      "schedule": "11 21 * * *"
+    },
+    {
+      "path": "/operations/cron/dispatch-alerts/22",
+      "schedule": "11 22 * * *"
+    },
+    {
+      "path": "/operations/cron/dispatch-alerts/23",
+      "schedule": "11 23 * * *"
+    },
+    {
       "path": "/operations/cron/cleanup-private-files",
       "schedule": "43 1 * * *"
     }

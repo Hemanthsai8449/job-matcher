@@ -46,13 +46,14 @@ def test_authorized_job_sync_returns_service_summary(app, client, monkeypatch):
 def test_authorized_alert_dispatch_returns_service_summary(app, client, monkeypatch):
     monkeypatch.setattr(routes, "dispatch_due_alerts", lambda: {"sent": 3})
 
-    response = client.get(
-        "/operations/cron/dispatch-alerts",
-        headers={"Authorization": f"Bearer {app.config['CRON_SECRET']}"},
-    )
+    headers = {"Authorization": f"Bearer {app.config['CRON_SECRET']}"}
+    response = client.get("/operations/cron/dispatch-alerts", headers=headers)
 
     assert response.status_code == 200
     assert response.get_json()["result"] == {"sent": 3}
+    assert client.get("/operations/cron/dispatch-alerts/0", headers=headers).status_code == 200
+    assert client.get("/operations/cron/dispatch-alerts/23", headers=headers).status_code == 200
+    assert client.get("/operations/cron/dispatch-alerts/24", headers=headers).status_code == 404
 
 
 def test_authorized_cleanup_returns_service_summary(app, client, monkeypatch):

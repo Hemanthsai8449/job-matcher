@@ -171,9 +171,9 @@ Remove-Item Env:APP_ENV
 ```
 
 6. Deploy, open `/health`, and expect `{"database":"ok","status":"ok"}`. Then register the Telegram webhook using the production domain as described above.
-7. In the GitHub repository, create Actions secrets named `APP_BASE_URL` and `CRON_SECRET`. They must exactly match the Vercel production values. The checked-in workflow invokes the protected alert dispatcher every five minutes; GitHub schedules are best-effort and public repositories disable inactive schedules after 60 days. For strict delivery timing, use a dedicated scheduler or Vercel Pro cron and disable the GitHub dispatcher so only one scheduler runs.
+7. Verify the project's Cron Jobs page after the production deployment. `vercel.json` registers one protected alert-dispatch path for each UTC hour. Every individual expression runs once per day, which is compatible with Vercel Hobby, while the distinct paths collectively check timezone-aware user schedules throughout the day. Vercel automatically sends `CRON_SECRET` as a Bearer token.
 
-`vercel.json` schedules job-source refresh and private-file cleanup once per day, which is compatible with Vercel Hobby. Vercel automatically sends `CRON_SECRET` as a Bearer token. The alert dispatcher is intentionally not a Vercel Hobby cron because that plan only permits one invocation per day.
+Vercel Hobby schedules can run anywhere within their configured hour. The user interface therefore describes an honest delivery window of up to two hours after the selected time. The dispatcher records one completion per user's local day, and the permanent send ledger prevents repeated links if cron invocations overlap. The GitHub Actions dispatcher is manual-only and remains available as an authenticated emergency trigger.
 
 For rollback, use Vercel's previous production deployment and keep schema migrations backward-compatible. Vercel rollback does not roll back the database or automatically change registered cron definitions, so verify both after a rollback.
 

@@ -5,6 +5,7 @@ import json
 import time
 from collections import Counter, defaultdict
 from datetime import timedelta
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from flask import (
     Blueprint,
@@ -46,6 +47,34 @@ bp = Blueprint("main", __name__)
 
 def comma_list(value: str) -> list[str]:
     return list(dict.fromkeys(part.strip() for part in value.split(",") if part.strip()))
+
+
+def alert_delivery_context(user: User) -> dict[str, str | None]:
+    """Return truthful, user-local delivery information for alert surfaces."""
+
+    try:
+        timezone = ZoneInfo(str(user.timezone or "Asia/Kolkata"))
+    except (ZoneInfoNotFoundError, ValueError):
+        timezone = ZoneInfo("UTC")
+    last_sent_at = db.session.scalar(
+        db.select(SentJob.sent_at)
+        .where(
+            SentJob.user_id == user.id,
+            SentJob.status.in_(("sent", "delivered")),
+            SentJob.sent_at.is_not(None),
+        )
+        .order_by(SentJob.sent_at.desc(), SentJob.id.desc())
+        .limit(1)
+    )
+    last_sent = as_utc(last_sent_at)
+    return {
+        "last_sent": (
+            last_sent.astimezone(timezone).strftime("%d %b %Y, %I:%M %p")
+            if last_sent is not None
+            else None
+        ),
+        "timezone": str(user.timezone or "Asia/Kolkata"),
+    }
 
 
 @bp.get("/")
@@ -108,6 +137,7 @@ def dashboard():
         skill_summary=skill_counter.most_common(6),
         profile_steps=profile_steps,
         readiness=round(sum(done for _, done in profile_steps) / len(profile_steps) * 100),
+        alert_delivery=alert_delivery_context(current_user),
     )
 
 
@@ -171,7 +201,12 @@ def settings():
         .where(Resume.user_id == current_user.id, Resume.is_current.is_(True))
         .order_by(Resume.created_at.desc())
     )
-    return render_template("main/settings.html", form=form, current_resume=current_resume)
+    return render_template(
+        "main/settings.html",
+        form=form,
+        current_resume=current_resume,
+        alert_delivery=alert_delivery_context(current_user),
+    )
 
 
 @bp.post("/alerts/pause")

@@ -1,8 +1,6 @@
 name: Dispatch due Telegram alerts
 
 on:
-  schedule:
-    - cron: "2-57/5 * * * *"
   workflow_dispatch:
 
 permissions:

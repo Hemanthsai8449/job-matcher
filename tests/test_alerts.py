@@ -4,7 +4,8 @@ import pytest
 
 from app.extensions import db
 from app.models import Job, JobMatch, SentJob
-from app.services.alert_service import dispatch_user_alerts, select_alert_jobs
+from app.services import alert_service
+from app.services.alert_service import dispatch_due_alerts, dispatch_user_alerts, select_alert_jobs
 from app.services.matching_service import MATCH_SCORE_FLOOR
 
 
@@ -79,6 +80,34 @@ def test_alert_dispatch_rejects_non_durable_reservations(app, user_factory):
 
     with pytest.raises(ValueError, match="durable database reservations"):
         dispatch_user_alerts(user, commit=False)
+
+
+def test_automatic_dispatch_runs_after_preferred_time_once_per_local_day(
+    app, user_factory, monkeypatch
+):
+    now = datetime(2026, 8, 29, 9, 0, tzinfo=UTC)
+    user_factory(
+        telegram_chat_id="999002",
+        telegram_user_id="999002",
+        phone_verified_at=now,
+        alert_status="active",
+        active_until=now + timedelta(days=7),
+        daily_job_limit=3,
+        preferred_time="09:00",
+        timezone="UTC",
+    )
+    monkeypatch.setattr(alert_service, "select_alert_jobs", lambda *args, **kwargs: [])
+
+    before = dispatch_due_alerts(now=now - timedelta(minutes=1), sender=lambda *args, **kwargs: {})
+    first_due = dispatch_due_alerts(now=now, sender=lambda *args, **kwargs: {})
+    duplicate_slot = dispatch_due_alerts(
+        now=now + timedelta(minutes=30), sender=lambda *args, **kwargs: {}
+    )
+
+    assert before["users_due"] == 0
+    assert first_due["users_due"] == 1
+    assert first_due["users_processed"] == 1
+    assert duplicate_slot["users_due"] == 0
 
 
 def test_alerts_use_fixed_50_percent_floor_and_highest_score_first(app, user_factory):

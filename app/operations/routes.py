@@ -54,7 +54,10 @@ def sync_jobs():
 
 @bp.get("/operations/cron/dispatch-alerts")
 @limiter.exempt
-def dispatch_alerts():
+@bp.get("/operations/cron/dispatch-alerts/<int:slot>")
+def dispatch_alerts(slot: int | None = None):
+    if slot is not None and not 0 <= slot <= 23:
+        return jsonify(error="Invalid scheduler slot."), 404
     return jsonify(status="ok", operation="dispatch-alerts", result=dispatch_due_alerts())
 
 

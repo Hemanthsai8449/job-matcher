@@ -207,6 +207,14 @@
 .checklist li.done > span { color: var(--success-700); background: var(--success-100); }
 .checklist a { font-size: .68rem; font-weight: 700; }
 .alert-card > p { color: var(--text-soft); font-size: .78rem; }
+.alert-delivery-state { display: flex; gap: .6rem; align-items: center; margin: .75rem 0; padding: .7rem; border: 1px solid var(--brand-200); border-radius: .7rem; color: var(--brand-800); background: var(--brand-50); }
+.alert-delivery-state > span { display: grid; width: 2rem; height: 2rem; flex: 0 0 auto; place-items: center; border-radius: .55rem; background: var(--brand-100); }
+.alert-delivery-state > div { display: grid; gap: .08rem; }
+.alert-delivery-state strong { font-size: .72rem; }
+.alert-delivery-state small { color: var(--ink-600); font-size: .64rem; line-height: 1.45; }
+.alert-delivery-state--wide { margin-block: .9rem 0; }
+.alert-window-note { margin-top: -.1rem; font-size: .68rem !important; line-height: 1.55; }
+.alert-settings-link { display: inline-flex; gap: .3rem; align-items: center; justify-content: center; width: 100%; margin-top: .65rem; font-size: .68rem; font-weight: 720; text-decoration: none; }
 .safety-mini { display: flex; gap: .7rem; padding: .9rem; border-radius: .8rem; color: #d7e1e5; background: var(--ink-900); }
 .safety-mini > span { color: var(--accent-400); }
 .safety-mini strong { color: var(--white); font-size: .78rem; }
